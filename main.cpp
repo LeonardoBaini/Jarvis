@@ -7,19 +7,20 @@ using namespace std;
 int main(int argc, char **argv) {
 
     // VER EL TEMA DE LONGITUD
-    char ipOriginal[41];
-	char userOriginal[41];
-	char passwordOriginal[41];
-    char ipDDNSnuevo[41];
-	char userDDNSnuevo[41];
-	char passwordDDNSnuevo[41];
-	int  tipoDDNS;
-	int  portSdk;
+    char ipOriginal[MAX_DOMAIN_NAME]={0};
+	char userOriginal[NAME_LEN]={0};
+	char passwordOriginal[PASSWD_LEN]={0};
+    char ipDDNSnuevo[MAX_DOMAIN_NAME]={0};
+	char userDDNSnuevo[NAME_LEN]={0};
+	char passwordDDNSnuevo[PASSWD_LEN]={0};
+	char serverDDNSnuevo[MAX_DOMAIN_NAME]={0};
+	int  tipoDDNS=0;
+	int  portSdk=0;
 
 
     if(argc<9){
     cout << "La ejecucion requiere 8 parametros, ingrese:\n";
-    cout << "HickVisionConfigurer.exe Param1 Param2 Param3 Param4 Param5 Param6 Param7 Param8\n";
+    cout << "HickVisionConfigurer.exe Param1 Param2 Param3 Param4 Param5 Param6 Param7 Param8 Param9\n";
     cout << "Donde\n";
     cout << "Param 1 = Usuario de login al DVR\n";
     cout << "Param 2 = Contrasena de login al DVR\n";
@@ -29,6 +30,18 @@ int main(int argc, char **argv) {
     cout << "Param 6 = Nuevo usuario\n";
     cout << "Param 7 = Nueva contrasena\n";
     cout << "Param 8 = DYNDNS=1 / NO-IP=3\n";
+    cout << "Param 9 = Servidor nuevo\n";
+
+    /*Reservado para test*/
+    strcpy(ipDDNSnuevo,"hiwatch03.es.camaras.proseguralarmas.com");
+    strcpy(userDDNSnuevo,"155gSC-prosegur");
+    strcpy(passwordDDNSnuevo,"prosegur");
+    tipoDDNS=1;
+    strcpy(userOriginal, "admin");
+    strcpy(passwordOriginal,"87654321z");
+    strcpy(ipOriginal,"hiwatch03.es.camaras.proseguralarmas.com");
+    portSdk =6037;
+    tipoDDNS=3;
 
 
     /*
@@ -37,6 +50,7 @@ int main(int argc, char **argv) {
     passwordDDNSnuevo="Patagon1an";
     tipoDDNS=3;
     */
+
     /*
     strcpy(userOriginal, "admin");
     strcpy(passwordOriginal,"87654321z");
@@ -45,7 +59,7 @@ int main(int argc, char **argv) {
     tipoDDNS=3;
     */
 
-    return 2000;
+    //return 2000;
 
     }
     else{
@@ -57,6 +71,8 @@ int main(int argc, char **argv) {
     strcpy(userDDNSnuevo, argv[6]);
     strcpy(passwordDDNSnuevo, argv[7]);
     tipoDDNS=atoi(argv[8]);
+    strcpy(serverDDNSnuevo, argv[9]);
+
 
     cout <<"userOriginal:"<<userOriginal<<"\n";
     cout <<"passwordOriginal:"<<passwordOriginal<<"\n";
@@ -66,6 +82,7 @@ int main(int argc, char **argv) {
     cout <<"userDDNSnuevo:"<<userDDNSnuevo<<"\n";
     cout <<"passwordDDNSnuevo:"<<passwordDDNSnuevo<<"\n";
     cout <<"tipoDDNS:"<<tipoDDNS<<"\n";
+    cout <<"serverDDNSnuevo:"<<serverDDNSnuevo<<"\n";
     cout << endl;
 
 
@@ -130,29 +147,43 @@ int main(int argc, char **argv) {
       NET_DVR_Cleanup();
       return NET_DVR_GetLastError();
   }
+/*Inicializar dns posibles para borrar basura*/
+int i=0;
+while (i < MAX_DDNS_NUMS){
+        struParams2.struDDNS[i]={0};
+       /* struParams2.struDDNS[i].sUsername={0};
+        struParams2.struDDNS[i].sPassword={0};
+        struParams2.struDDNS[i].sServerName={0};*/
+    i++;
+}
 
 
 
 
-//pruebatvt.ddns.net
-string nuevoDns=ipDDNSnuevo;
-string nuevoServerName="www.noip.com";
-string nuevoUsuario=userDDNSnuevo;
-string nuevoPassword=passwordDDNSnuevo;
-
-
+/*ASIGNACION DE VALORES AL NUEVO OBJETO*/
 
 struParams2.byHostIndex=tipoDDNS; // no ip =3 Dyndns=1
 struParams2.byEnableDDNS=1;
-for(int i=0;i<sizeof(nuevoDns);i++){
-struParams2.struDDNS[tipoDDNS].sDomainName[i]=nuevoDns[i];
+
+for(int j=0;j<MAX_DOMAIN_NAME;j++){
+struParams2.struDDNS[tipoDDNS].sDomainName[j]=ipDDNSnuevo[j];
 }
-for(int i=0;i<sizeof(nuevoUsuario);i++){
-struParams2.struDDNS[tipoDDNS].sUsername[i]=nuevoUsuario[i];
+
+for(int i=0;i<NAME_LEN;i++){
+struParams2.struDDNS[tipoDDNS].sUsername[i]=userDDNSnuevo[i];
 }
-for(int i=0;i<sizeof(nuevoPassword);i++){
-struParams2.struDDNS[tipoDDNS].sPassword[i]=nuevoPassword[i];
+for(int i=0;i<PASSWD_LEN;i++){
+struParams2.struDDNS[tipoDDNS].sPassword[i]=passwordDDNSnuevo[i];
 }
+for(int i=0;i<MAX_DOMAIN_NAME;i++){
+struParams2.struDDNS[tipoDDNS].sServerName[i]=serverDDNSnuevo[i];
+}
+
+
+
+
+
+
 
 iRet = NET_DVR_SetDVRConfig(lUserID, NET_DVR_SET_DDNSCFG_V30, struDeviceInfo.byStartChan,
           &struParams2, sizeof(NET_DVR_DDNSPARA_V30));
@@ -179,6 +210,7 @@ iRet = NET_DVR_SetDVRConfig(lUserID, NET_DVR_SET_DDNSCFG_V30, struDeviceInfo.byS
 
 
 
+  NET_DVR_RebootDVR(lUserID);
   //Logout device
   NET_DVR_Logout(lUserID);
   //Release sdk resource
