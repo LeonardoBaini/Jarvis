@@ -15,23 +15,63 @@ namespace TestApp
         static int userId = 0;
         static NET_SDK_DEVICEINFO oNET_SDK_DEVICEINFO = new NET_SDK_DEVICEINFO();
 
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
+           if (args.Length < 8)
+            {
+                Console.WriteLine("La ejecucion requiere 8 parametros, ingrese:\n");
+                Console.WriteLine("HickVisionConfigurer.exe Param1 Param2 Param3 Param4 Param5 Param6 Param7 Param8 Param9\n");
+                Console.WriteLine("Donde\n");
+                Console.WriteLine("Param 1 = Usuario de login al DVR\n");
+                Console.WriteLine("Param 2 = Contrasena de login al DVR\n");
+                Console.WriteLine("Param 3 = URL o IP del equipo\n");
+                Console.WriteLine("Param 4 = Puerto SDK\n");
+                Console.WriteLine("Param 5 = Nueva URL\n");
+                Console.WriteLine("Param 6 = Nuevo usuario\n");
+                Console.WriteLine("Param 7 = Nueva contrasena\n");
+                Console.WriteLine("Param 8 = DYNDNS=4 / NO-IP=5\n");
+                Console.ReadLine();
+                return 0;
+            }
+         
 
-
-            
-
-
-            bool bResult;
-           
+            bool bResult;   
 
             bResult = DevSdkHelper.NET_SDK_Init();
 
-            string loginIp = ConfigurationManager.AppSettings["ip"];
-            UInt16 loginPort = Convert.ToUInt16(ConfigurationManager.AppSettings["port"]);
-            string loginUserName = ConfigurationManager.AppSettings["username"];
-            string loginPwd = ConfigurationManager.AppSettings["password"];
-
+            /*Cargar parámetros variables*/
+            
+             string loginUserName = args[0];
+             string loginPwd = args[1];
+             string loginIp = args[2];
+             UInt16 loginPort = Convert.ToUInt16(args[3]);
+             string nuevoUrlDns= args[4];
+             string nuevoUsuarioDns = args[5];
+             string nuevoPasswordDns = args[6];
+             uint indexServerDns = Convert.ToUInt16(args[7]); 
+             
+            //Test cambio a NO-IP
+            /*
+            string loginUserName = "admin";
+            string loginPwd = "12345678";
+            string loginIp = "pruebas.es.camaras.proseguralarmas.com";
+            UInt16 loginPort = Convert.ToUInt16(6039);            
+            string nuevoUrlDns = "pruebatvt.ddns.net";
+            string nuevoUsuarioDns = "bainileonardo@gmail.com";
+            string nuevoPasswordDns = "Patagon1an";
+            uint indexServerDns = Convert.ToUInt16(5);
+            */
+            //Test cambio a DynDns
+            /*
+            string loginUserName = "admin";
+            string loginPwd = "12345678";
+            string loginIp = "pruebatvt.ddns.net";
+            UInt16 loginPort = Convert.ToUInt16(6039);
+            string nuevoUrlDns = "pruebas.es.camaras.proseguralarmas.com";
+            string nuevoUsuarioDns = "155gSC-prosegur";
+            string nuevoPasswordDns = "prosegur";
+            uint indexServerDns = Convert.ToUInt16(4);
+            */
 
             userId = DevSdkHelper.NET_SDK_LoginEx(loginIp, loginPort, loginUserName, loginPwd, ref oNET_SDK_DEVICEINFO, NET_SDK_CONNECT_TYPE.NET_SDK_CONNECT_TCP, "");
 
@@ -40,9 +80,10 @@ namespace TestApp
             {
                 Console.WriteLine("Login in failed! End ...");
                 Console.ReadLine();
-                return;
+                return Convert.ToUInt16(DevSdkHelper.NET_SDK_GetLastError());
             }
 
+            /*Mostrar algo de info*/
             StringBuilder sbNET_SDK_DEVICEINFO_format = new StringBuilder("[ref] oNET_SDK_DEVICEINFO:\r\n");
             sbNET_SDK_DEVICEINFO_format.AppendLine("firmwareVersion: {0}");
             sbNET_SDK_DEVICEINFO_format.AppendLine("kernelVersion: {1}");
@@ -65,68 +106,16 @@ namespace TestApp
                 , oNET_SDK_DEVICEINFO.GetDeviceMAC()
                 , oNET_SDK_DEVICEINFO.devicePort));
 
-
-            string cmd = "";
-            int contador = 0;
-            while (true)
-            {
-
-                Console.WriteLine("**************INGRESE OPCION DESEADA********************");
-                Console.WriteLine("0: Testing LB LEYENDO PARAMETROS DDNS");
-                Console.WriteLine("1: LIMPIAR PANTALLA");
-                Console.WriteLine("2: ASIGNAR VALORES NO-IP");
-                Console.WriteLine("3: ASIGNAR VALORES DYNDNS");
-                Console.WriteLine("4: Reiniciar DVR");
-                Console.WriteLine("Q: Exit");
-             
-                cmd = Console.ReadLine();
-                switch (cmd)
-                {
-                    case "0":
-                        testLB();
-                        break;
-                    case "1":
-                        Console.Clear();
-                        break;
-                    case "2":
-                        cambiarXnoIp(contador);
-                        break;
-                    case "3":
-                        cambiarXDyndns();
-                        break;
-                    case "4":
-                        reiniciarDvr(userId);
-                        break;
-                    case "q":
-                        Environment.Exit(0);
-                        break;
-                    case "Q":
-                        Environment.Exit(0);
-                        break;
-                    default:
-                        Console.WriteLine("Command not support");
-                        break;
-                }
-            }
+            
+         
+           
+            return cambiarDnsData(nuevoUrlDns, nuevoUsuarioDns, nuevoPasswordDns, indexServerDns);
 
             Console.ReadLine();
         }
 
-        static void reiniciarDvr(int userId)
-        {
-            DevSdkHelper.NET_SDK_EnterDVRConfig(userId);
-            if (DevSdkHelper.NET_SDK_RebootDVR(userId))
-            {
-                Console.WriteLine("Reiniciando....");
-            }
-            else
-            {
-                Console.WriteLine("No se puede reiniciar");
-            }
-            DevSdkHelper.NET_SDK_ExitDVRConfig(userId);
-        }
 
-        static void cambiarXnoIp(int contador)
+        static int cambiarDnsData(string nuevoUrlDns,string nuevoUsuarioDns,string nuevoPasswordDns,uint indexServerDns)
         {
             
             int lpBytesReturned = 0;
@@ -134,27 +123,41 @@ namespace TestApp
             int tamanioDns = Marshal.SizeOf(dns);
             IntPtr intptrDtc = Marshal.AllocHGlobal(tamanioDns);
             bool ret = DevSdkHelper.NET_SDK_GetDVRConfig(userId, (uint)DD_CONFIG_ITEM_ID.DD_CONFIG_ITEM_NETWORK_DDNS, -1, intptrDtc, tamanioDns, ref lpBytesReturned, true);
-
+            int enterConfig=0;
             DD_DDNS_CONFIG tmp_dns = (DD_DDNS_CONFIG)Marshal.PtrToStructure(intptrDtc, typeof(DD_DDNS_CONFIG));
           
             Marshal.FreeHGlobal(intptrDtc);
 
             tmp_dns.enable = 1;
             tmp_dns.hostDomain=inicializarArray(tmp_dns.hostDomain);
-            tmp_dns.hostDomain = Encoding.ASCII.GetBytes(llenarConCero("pruebatvt.ddns.net", tmp_dns.hostDomain));
+            tmp_dns.hostDomain = Encoding.ASCII.GetBytes(llenarConCero(nuevoUrlDns, tmp_dns.hostDomain));
             tmp_dns.userName = inicializarArray(tmp_dns.userName);
-            tmp_dns.userName= Encoding.ASCII.GetBytes(llenarConCero("bainileonardo@gmail.com", tmp_dns.userName));
+            tmp_dns.userName= Encoding.ASCII.GetBytes(llenarConCero(nuevoUsuarioDns, tmp_dns.userName));
             tmp_dns.password = inicializarArray(tmp_dns.password);
-            tmp_dns.password = Encoding.ASCII.GetBytes(llenarConCero("Patagon1an", tmp_dns.password));
+            tmp_dns.password = Encoding.ASCII.GetBytes(llenarConCero(nuevoPasswordDns, tmp_dns.password));
 
-            tmp_dns.useDDNSServer = 5;
+            tmp_dns.useDDNSServer = indexServerDns;// Es para que use el dns correcto en el desplegable, es el index de dns servers 5 No-Ip 4 DynDns.
 
              
             tamanioDns = Marshal.SizeOf(tmp_dns);
             intptrDtc = Marshal.AllocHGlobal(tamanioDns);            
             Marshal.StructureToPtr(tmp_dns, intptrDtc, true);
 
-            DevSdkHelper.NET_SDK_EnterDVRConfig(userId);
+            DevSdkHelper.NET_SDK_ExitDVRConfig(userId);// Se limpia por las dudas que haya salido mal
+
+            enterConfig =DevSdkHelper.NET_SDK_EnterDVRConfig(userId);
+            Console.WriteLine("Ingreso a la configuracion, error code: {0}", DevSdkHelper.NET_SDK_GetLastError());
+            
+            if (enterConfig != -1)
+            {
+                Console.WriteLine("Ingreso a la configuración ok");
+            }
+            else
+            {
+                Console.WriteLine("ERROR, NO Ingresa a la configuración");
+              //  Console.WriteLine("Fallo al ingresar a la configuracion, El error es : {0}", DevSdkHelper.NET_SDK_GetLastError());
+                return Convert.ToUInt16(DevSdkHelper.NET_SDK_GetLastError());
+            }
             ret = DevSdkHelper.NET_SDK_SetDVRConfig(userId, (uint)DD_CONFIG_ITEM_ID.DD_CONFIG_ITEM_NETWORK_DDNS, -1, intptrDtc, tamanioDns);
             Marshal.FreeHGlobal(intptrDtc);
            
@@ -163,68 +166,32 @@ namespace TestApp
             if (ret)
             {
                 Console.WriteLine("Guardado correcto");
-               // DevSdkHelper.NET_SDK_RebootDVR(userId);
-               contador = 0;
-            }
-            else
-            {
-                Console.WriteLine("No se pudo guardar...");
-              /*  if (contador < 3)
+                DevSdkHelper.NET_SDK_ExitDVRConfig(userId);
+                if (DevSdkHelper.NET_SDK_RebootDVR(userId))
                 {
-                    Console.WriteLine("Intentando de nuevo...");
-                    contador++;
-                    cambiarXnoIp(contador);
-                   
+                    Console.WriteLine("Reiniciando equipo");
+                }
+                else
+                {
+                    Console.WriteLine("Fallo al reiniciar El error es : {0}", DevSdkHelper.NET_SDK_GetLastError());
+                }
 
-                }*/
-                Console.WriteLine("El error es : {0}", DevSdkHelper.NET_SDK_GetLastError());
-            }
-
-            DevSdkHelper.NET_SDK_ExitDVRConfig(userId);
-
-
-
-
-
-        }
-
-        static void cambiarXDyndns()
-        {
-            int lpBytesReturned = 0;
-            DD_DDNS_CONFIG dns = new DD_DDNS_CONFIG();
-            int tamanioDns = Marshal.SizeOf(dns);
-            IntPtr intptrDtc = Marshal.AllocHGlobal(tamanioDns);
-            bool ret = DevSdkHelper.NET_SDK_GetDVRConfig(userId, (uint)DD_CONFIG_ITEM_ID.DD_CONFIG_ITEM_NETWORK_DDNS, -1, intptrDtc, tamanioDns, ref lpBytesReturned, true);
-            DD_DDNS_CONFIG tmp_dns = (DD_DDNS_CONFIG)Marshal.PtrToStructure(intptrDtc, typeof(DD_DDNS_CONFIG));
-            Marshal.FreeHGlobal(intptrDtc);
-
-            tmp_dns.enable = 1;
-            tmp_dns.hostDomain = Encoding.ASCII.GetBytes(llenarConCero("pruebas.es.camaras.proseguralarmas.com", tmp_dns.hostDomain));
-            tmp_dns.userName = Encoding.ASCII.GetBytes(llenarConCero("155gSC-prosegur", tmp_dns.userName));
-            tmp_dns.password = Encoding.ASCII.GetBytes(llenarConCero("prosegur", tmp_dns.password));
-            tmp_dns.useDDNSServer = 4;
-
-
-            tamanioDns = Marshal.SizeOf(tmp_dns);
-            intptrDtc = Marshal.AllocHGlobal(tamanioDns);
-            Marshal.StructureToPtr(tmp_dns, intptrDtc, true);
-
-            DevSdkHelper.NET_SDK_EnterDVRConfig(userId);
-            ret = DevSdkHelper.NET_SDK_SetDVRConfig(userId, (uint)DD_CONFIG_ITEM_ID.DD_CONFIG_ITEM_NETWORK_DDNS, -1, intptrDtc, tamanioDns);
-            Marshal.FreeHGlobal(intptrDtc);
-            DevSdkHelper.NET_SDK_ExitDVRConfig(userId);
-
-            if (ret)
-            {
-                Console.WriteLine("Guardado correcto");
             }
             else
             {
-                Console.WriteLine("No se pudo guardar...");
+                Console.WriteLine("No se pudo guardar...");              
                 Console.WriteLine("El error es : {0}", DevSdkHelper.NET_SDK_GetLastError());
             }
-           
+
+
+            
+            return Convert.ToUInt16(DevSdkHelper.NET_SDK_GetLastError());
+
         }
+
+      
+
+     
         private static String llenarConCero(String literal, Byte[]datoByte)
         {
             while (literal.Length < datoByte.Length)
@@ -240,33 +207,6 @@ namespace TestApp
             i++;
         }
             return datoByte;
-        }
-        static void testLB()
-        {
-                                             
-            DD_DDNS_CONFIG dns = new DD_DDNS_CONFIG();
-            int tamanioDns = Marshal.SizeOf(dns);
-            IntPtr intptrDtc = Marshal.AllocHGlobal(tamanioDns);
-            int lpBytesReturned = 0;
-            bool ret = DevSdkHelper.NET_SDK_GetDVRConfig(userId, (uint)DD_CONFIG_ITEM_ID.DD_CONFIG_ITEM_NETWORK_DDNS, -1, intptrDtc, tamanioDns, ref lpBytesReturned, true);
-            DD_DDNS_CONFIG tmp_dns = (DD_DDNS_CONFIG)Marshal.PtrToStructure(intptrDtc, typeof(DD_DDNS_CONFIG));
-            Marshal.FreeHGlobal(intptrDtc);
-
-            string usuario = Encoding.ASCII.GetString(tmp_dns.userName);
-            string password = Encoding.UTF8.GetString(tmp_dns.password);
-            string dominio = Encoding.UTF8.GetString(tmp_dns.hostDomain);
-          
-            Console.WriteLine("dns.userName: {0}", usuario);
-            Console.WriteLine("dns.userName: {0}", password);
-            Console.WriteLine("dns.hostDomain: {0}", dominio);
-            Console.WriteLine("dns.enable: {0}", tmp_dns.enable);
-            Console.WriteLine("dns.iSize: {0}", tmp_dns.iSize);
-            Console.WriteLine("dns.interval: {0}", tmp_dns.interval);
-            Console.WriteLine("dns.useDDNSServer: {0}", tmp_dns.useDDNSServer);
-            Console.WriteLine("dns.userHostDomain: {0}", tmp_dns.userHostDomain);
-
-          
-
         }
        
 
