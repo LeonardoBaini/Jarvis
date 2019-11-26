@@ -1,0 +1,1 @@
+HickVisionConfigurer.exe admin 87654321z hiwatch03.es.camaras.proseguralarmas.com 6037 hiwatch03.es.camaras.proseguralarmas.com 155gSC-prosegur prosegur 1 members.dyndns.org

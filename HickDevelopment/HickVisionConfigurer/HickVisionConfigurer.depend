@@ -1,0 +1,15 @@
+# depslib dependency file v1.0
+1574371467 source:c:\desarrollos\hickdevelopment\hickvisionconfigurer\main.cpp
+	<stdio.h>
+	<iostream>
+	"Windows.h"
+	"HCNetSDK.h"
+
+1487326476 c:\desarrollos\hickdevelopment\hickvisionconfigurer\hcnetsdk.h
+	<winsock2.h>
+	<windows.h>
+
+1487326476 c:\desarrollos\hickvision\incen\hcnetsdk.h
+	<winsock2.h>
+	<windows.h>
+

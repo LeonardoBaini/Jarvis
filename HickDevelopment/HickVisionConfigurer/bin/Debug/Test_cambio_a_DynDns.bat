@@ -1,0 +1,1 @@
+HickVisionConfigurer.exe admin 87654321z pruebahickvision.ddns.net 6037 hiwatch03.es.camaras.proseguralarmas.com 155gSC-prosegur prosegur 1 members.dyndns.org
