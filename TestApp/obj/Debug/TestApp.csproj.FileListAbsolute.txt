@@ -1,0 +1,22 @@
+E:\设备SDK测试\SDK-N9000\Windows\bin_release\Debug_vcx\TestApp.exe.config
+E:\设备SDK测试\SDK-N9000\Windows\bin_release\Debug_vcx\TestApp.exe
+E:\设备SDK测试\SDK-N9000\Windows\bin_release\Debug_vcx\TestApp.pdb
+E:\设备SDK测试\SDK-N9000\Windows\c# wrapper\DevSdkByCS\TestApp\obj\Debug\TestApp.csprojResolveAssemblyReference.cache
+E:\设备SDK测试\SDK-N9000\Windows\c# wrapper\DevSdkByCS\TestApp\obj\Debug\TestApp.exe
+E:\设备SDK测试\SDK-N9000\Windows\c# wrapper\DevSdkByCS\TestApp\obj\Debug\TestApp.pdb
+C:\Users\Administrator\bin_release\Debug_vcx\TestApp.exe.config
+C:\Users\Administrator\bin_release\Debug_vcx\TestApp.exe
+C:\Users\Administrator\bin_release\Debug_vcx\TestApp.pdb
+C:\Users\Administrator\Desktop\DevSdkByCS20180901\TestApp\obj\Debug\TestApp.csprojResolveAssemblyReference.cache
+C:\Users\Administrator\Desktop\DevSdkByCS20180901\TestApp\obj\Debug\TestApp.exe
+C:\Users\Administrator\Desktop\DevSdkByCS20180901\TestApp\obj\Debug\TestApp.pdb
+C:\bin_release\Debug_vcx\TestApp.exe.config
+C:\bin_release\Debug_vcx\TestApp.exe
+C:\bin_release\Debug_vcx\TestApp.pdb
+C:\Desarrollos\DevSdkByCS20181109_TVT32\Compilaciones\TestApp.exe.config
+C:\Desarrollos\DevSdkByCS20181109_TVT32\Compilaciones\TestApp.exe
+C:\Desarrollos\DevSdkByCS20181109_TVT32\Compilaciones\TestApp.pdb
+C:\Desarrollos\DevSdkByCS20181109_TVT32\TestApp\obj\Debug\TestApp.csprojAssemblyReference.cache
+C:\Desarrollos\DevSdkByCS20181109_TVT32\TestApp\obj\Debug\TestApp.csproj.CopyComplete
+C:\Desarrollos\DevSdkByCS20181109_TVT32\TestApp\obj\Debug\TestApp.exe
+C:\Desarrollos\DevSdkByCS20181109_TVT32\TestApp\obj\Debug\TestApp.pdb
