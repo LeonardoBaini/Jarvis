@@ -1,4 +1,4 @@
-﻿using DevSdkByCS;
+using DevSdkByCS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,8 +19,8 @@ namespace TestApp
         {
            if (args.Length < 8)
             {
-                Console.WriteLine("La ejecucion requiere 8 parametros, ingrese:\n");
-                Console.WriteLine("HickVisionConfigurer.exe Param1 Param2 Param3 Param4 Param5 Param6 Param7 Param8 Param9\n");
+                Console.WriteLine("Bienvenido al configurador TVT, la ejecucion requiere 8 parametros, ingrese:\n");
+                Console.WriteLine("TestApp.exe Param1 Param2 Param3 Param4 Param5 Param6 Param7 Param8\n");
                 Console.WriteLine("Donde\n");
                 Console.WriteLine("Param 1 = Usuario de login al DVR\n");
                 Console.WriteLine("Param 2 = Contrasena de login al DVR\n");
@@ -30,8 +30,8 @@ namespace TestApp
                 Console.WriteLine("Param 6 = Nuevo usuario\n");
                 Console.WriteLine("Param 7 = Nueva contrasena\n");
                 Console.WriteLine("Param 8 = DYNDNS=4 / NO-IP=5\n");
-                Console.ReadLine();
-                return 0;
+                
+                return -1;
             }
          
 
@@ -79,7 +79,7 @@ namespace TestApp
             if (userId == -1)
             {
                 Console.WriteLine("Login in failed! End ...");
-                Console.ReadLine();
+                
                 return Convert.ToUInt16(DevSdkHelper.NET_SDK_GetLastError());
             }
 
@@ -111,13 +111,13 @@ namespace TestApp
            
             return cambiarDnsData(nuevoUrlDns, nuevoUsuarioDns, nuevoPasswordDns, indexServerDns);
 
-            Console.ReadLine();
+            
         }
 
 
         static int cambiarDnsData(string nuevoUrlDns,string nuevoUsuarioDns,string nuevoPasswordDns,uint indexServerDns)
         {
-            
+            int errorCode = -1;
             int lpBytesReturned = 0;
             DD_DDNS_CONFIG dns = new DD_DDNS_CONFIG();
             int tamanioDns = Marshal.SizeOf(dns);
@@ -155,8 +155,9 @@ namespace TestApp
             else
             {
                 Console.WriteLine("ERROR, NO Ingresa a la configuración");
-              //  Console.WriteLine("Fallo al ingresar a la configuracion, El error es : {0}", DevSdkHelper.NET_SDK_GetLastError());
-                return Convert.ToUInt16(DevSdkHelper.NET_SDK_GetLastError());
+                //  Console.WriteLine("Fallo al ingresar a la configuracion, El error es : {0}", DevSdkHelper.NET_SDK_GetLastError());
+                errorCode = Convert.ToUInt16(DevSdkHelper.NET_SDK_GetLastError());
+                return errorCode;
             }
             ret = DevSdkHelper.NET_SDK_SetDVRConfig(userId, (uint)DD_CONFIG_ITEM_ID.DD_CONFIG_ITEM_NETWORK_DDNS, -1, intptrDtc, tamanioDns);
             Marshal.FreeHGlobal(intptrDtc);
@@ -170,22 +171,29 @@ namespace TestApp
                 if (DevSdkHelper.NET_SDK_RebootDVR(userId))
                 {
                     Console.WriteLine("Reiniciando equipo");
+                    errorCode = Convert.ToUInt16(DevSdkHelper.NET_SDK_GetLastError());
+                    return errorCode;
                 }
                 else
                 {
-                    Console.WriteLine("Fallo al reiniciar El error es : {0}", DevSdkHelper.NET_SDK_GetLastError());
+                    errorCode = Convert.ToUInt16(DevSdkHelper.NET_SDK_GetLastError());
+                    
+                    Console.WriteLine("Fallo al reiniciar El error es : {0}", errorCode);
+                    return errorCode;
                 }
 
             }
             else
             {
+                errorCode = Convert.ToUInt16(DevSdkHelper.NET_SDK_GetLastError());
                 Console.WriteLine("No se pudo guardar...");              
-                Console.WriteLine("El error es : {0}", DevSdkHelper.NET_SDK_GetLastError());
+                Console.WriteLine("El error es : {0}", errorCode);
+                
             }
 
 
-            
-            return Convert.ToUInt16(DevSdkHelper.NET_SDK_GetLastError());
+           
+            return errorCode;
 
         }
 
