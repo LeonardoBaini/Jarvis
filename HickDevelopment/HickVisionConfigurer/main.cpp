@@ -6,7 +6,7 @@ using namespace std;
 
 int main(int argc, char **argv) {
 
-    // VER EL TEMA DE LONGITUD
+
     char ipOriginal[MAX_DOMAIN_NAME]={0};
 	char userOriginal[NAME_LEN]={0};
 	char passwordOriginal[PASSWD_LEN]={0};
@@ -16,21 +16,22 @@ int main(int argc, char **argv) {
 	char serverDDNSnuevo[MAX_DOMAIN_NAME]={0};
 	int  tipoDDNS=0;
 	int  portSdk=0;
+	int  errorCode=-1;
 
 
     if(argc<9){
-    cout << "La ejecucion requiere 8 parametros, ingrese:\n";
+    cout << "La ejecucion requiere 9 parametros, ingrese:\n";
     cout << "HickVisionConfigurer.exe Param1 Param2 Param3 Param4 Param5 Param6 Param7 Param8 Param9\n";
     cout << "Donde\n";
     cout << "Param 1 = Usuario de login al DVR\n";
     cout << "Param 2 = Contrasena de login al DVR\n";
     cout << "Param 3 = URL o IP del equipo\n";
     cout << "Param 4 = Puerto SDK\n";
-    cout << "Param 5 = Nueva URL\n";
-    cout << "Param 6 = Nuevo usuario\n";
-    cout << "Param 7 = Nueva contrasena\n";
-    cout << "Param 8 = DYNDNS=1 / NO-IP=3\n";
-    cout << "Param 9 = Servidor nuevo\n";
+    cout << "Param 5 = Nueva URL \n";
+    cout << "Param 6 = Nuevo usuario (para el servicio DNS)\n";
+    cout << "Param 7 = Nueva contrasena (para el servicio DNS)\n";
+    cout << "Param 8 = DYNDNS=1 / NO-IP=3 \n";
+    cout << "Param 9 = Servidor nuevo (Servidor que usa por default dns, ejemplo members.dyndns.org)\n";
 
     /*Reservado para test*/
     /*
@@ -60,7 +61,7 @@ int main(int argc, char **argv) {
     tipoDDNS=3;
     */
 
-    //return 2000;
+    return errorCode;
 
     }
     else{
@@ -103,20 +104,21 @@ int main(int argc, char **argv) {
 
 	lUserID = NET_DVR_Login_V30(ipOriginal, portSdk, userOriginal, passwordOriginal, &struDeviceInfo);
 
-	printf("Este es el serial number-->  ");
-	printf((char*)&struDeviceInfo.sSerialNumber);
+	//printf("Este es el serial number-->  ");
+	//printf((char*)&struDeviceInfo.sSerialNumber);
 
-	printf("\n");
+	//printf("\n");
 
 
-	// Hasta ac· logueado.
+	// Hasta ac√° logueado.
 	//******************************************************************************************************************
 
 	if (lUserID < 0)
   {
-       printf("Login error, %d\n", (int)NET_DVR_GetLastError());
+       errorCode=(int)NET_DVR_GetLastError();
+       printf("Login error, %d\n", errorCode );
        NET_DVR_Cleanup();
-       return NET_DVR_GetLastError();
+       return errorCode;
   }
 
   int iRet;
@@ -143,10 +145,11 @@ int main(int argc, char **argv) {
   if (!iRet)
   {
      // printf("NET_DVR_GetDVRConfig NET_DVR_GET_DDNSCFG_V30 error.\n");
+      errorCode=(int)NET_DVR_GetLastError();
       printf((char*)NET_DVR_GetErrorMsg());
       NET_DVR_Logout_V30(lUserID);
       NET_DVR_Cleanup();
-      return NET_DVR_GetLastError();
+      return errorCode;
   }
 /*Inicializar dns posibles para borrar basura*/
 int i=0;
@@ -184,10 +187,11 @@ iRet = NET_DVR_SetDVRConfig(lUserID, NET_DVR_SET_DDNSCFG_V30, struDeviceInfo.byS
 
   if (!iRet)
   {
+      errorCode=(int)NET_DVR_GetLastError();
       printf((char*)NET_DVR_GetErrorMsg());
       NET_DVR_Logout_V30(lUserID);
       NET_DVR_Cleanup();
-      return NET_DVR_GetLastError();
+      return errorCode;
   }
 
 
@@ -196,10 +200,11 @@ iRet = NET_DVR_SetDVRConfig(lUserID, NET_DVR_SET_DDNSCFG_V30, struDeviceInfo.byS
 
   if (!iRet)
   {
-     printf((char*)NET_DVR_GetErrorMsg());
+      errorCode=(int)NET_DVR_GetLastError();
+      printf((char*)NET_DVR_GetErrorMsg());
       NET_DVR_Logout_V30(lUserID);
       NET_DVR_Cleanup();
-      return NET_DVR_GetLastError();
+      return errorCode;
   }
 
 
@@ -210,8 +215,9 @@ iRet = NET_DVR_SetDVRConfig(lUserID, NET_DVR_SET_DDNSCFG_V30, struDeviceInfo.byS
   //Release sdk resource
   NET_DVR_Cleanup();
 
+  errorCode=(int)NET_DVR_GetLastError();
 
-  return 1;
+  return errorCode;
 }
 
 
