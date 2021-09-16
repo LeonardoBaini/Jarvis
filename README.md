@@ -38,7 +38,8 @@ Definición de indice interno del dvr de cada dns provider:
 
 Ejecutando Jarvis para aplicar datos de DynDns
 
-![image](https://user-images.githubusercontent.com/11530132/133649778-5001c617-48f8-4421-b4b1-1ef371695e0d.png)
+![image](https://user-images.githubusercontent.com/11530132/133652571-fe0ee33f-e448-4da6-8c69-d293a75d48eb.png)
+
 
 Al ejecutar cada brazo de manera independiente, se muestra el ayuda de que parámetros recibe.
 
