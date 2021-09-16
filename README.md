@@ -14,7 +14,8 @@ Vista luego de ejecutar:
 
 Datos necesesarios, para el funcionamiento, datos iniciales, + datos cargados, + datos a cargar.
 
-![image](https://user-images.githubusercontent.com/11530132/133648396-dd396ba8-0438-49cd-b667-38fc8d734ece.png)
+![image](https://user-images.githubusercontent.com/11530132/133650751-e7d782d8-418c-49e9-b070-568b188d46ec.png)
+
 
 Códigos de errores posibles:
 ![image](https://user-images.githubusercontent.com/11530132/133648504-69657712-b64c-46ff-a209-08d791623ddb.png)
