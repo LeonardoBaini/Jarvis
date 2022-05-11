@@ -1,0 +1,200 @@
+#include <stdio.h>
+#include <iostream>
+#include "Windows.h"
+#include "HCNetSDK.h"
+using namespace std;
+
+int main(int argc, char **argv){
+
+    char passwordOriginal[PASSWD_LEN]= {0};
+
+    char passwordDDNSnuevo[PASSWD_LEN]= {0};
+    char ipOriginal[MAX_DOMAIN_NAME]= {0};
+    char ipDDNSnuevo[MAX_DOMAIN_NAME]= {0};
+    char userDDNSnuevo[NAME_LEN]= {0};
+    char serverDDNSnuevo[MAX_DOMAIN_NAME]= {0};
+    char userOriginal[NAME_LEN]= {0};
+    int  tipoDDNS=0;
+    int  tipoDDNSqueTieneCargado=0;
+    int  portSdk=0;
+    int  errorCode=-1;
+
+    /*
+    Probado en modelo:
+    HWD-5104M Firmware V3.4.88 build 180131 -> Actualiza NO-IP
+
+    */
+
+    if(argc<9)
+    {
+        cout << "La ejecucion requiere 9 parametros, ingrese:\n";
+        cout << "HickVisionConfigurer.exe Param1 Param2 Param3 Param4 Param5 Param6 Param7 Param8 Param9\n";
+        cout << "Donde\n";
+        cout << "Param 1 = Usuario de login al DVR\n";
+        cout << "Param 2 = Contrasena de login al DVR\n";
+        cout << "Param 3 = URL o IP del equipo\n";
+        cout << "Param 4 = Puerto SDK\n";
+        cout << "Param 5 = Nueva URL \n";
+        cout << "Param 6 = Nuevo usuario (para el servicio DNS)\n";
+        cout << "Param 7 = Nueva contrasena (para el servicio DNS)\n";
+        cout << "Param 8 = DYNDNS=1 / NO-IP=3 \n";
+        cout << "Param 9 = Servidor nuevo (Servidor que usa por default dns, ejemplo members.dyndns.org)\n";
+
+        return errorCode;
+
+    }
+    else
+    {
+
+
+        strcpy(userOriginal, argv[1]);
+        strcpy((char*)passwordOriginal, argv[2]);
+        strcpy(ipOriginal, argv[3]);
+        portSdk =atoi(argv[4]);
+        strcpy(ipDDNSnuevo, argv[5]);
+        strcpy(userDDNSnuevo, argv[6]);
+        strcpy(passwordDDNSnuevo, argv[7]);
+        tipoDDNS=atoi(argv[8]);
+        strcpy(serverDDNSnuevo, argv[9]);
+
+        printf("\n");
+        printf("Mostrando los datos que se intentan cargar al equipo");
+        printf("\n");
+        cout <<"userOriginal:"<<userOriginal<<"\n";
+        cout <<"passwordOriginal:"<<passwordOriginal<<"\n";
+        cout <<"ipOriginal:"<<ipOriginal<<"\n";
+        cout <<"portSdk:"<<portSdk<<"\n";
+        cout <<"ipDDNSnuevo:"<<ipDDNSnuevo<<"\n";
+        cout <<"userDDNSnuevo:"<<userDDNSnuevo<<"\n";
+        cout <<"passwordDDNSnuevo:"<<passwordDDNSnuevo<<"\n";
+        cout <<"tipoDDNS:"<<tipoDDNS<<"\n";
+        cout <<"serverDDNSnuevo:"<<serverDDNSnuevo<<"\n";
+        cout << endl;
+
+  /*  strcpy(ipDDNSnuevo,"14562322.ar.camara.proseguralarmas.com");
+    strcpy(userDDNSnuevo,"14562322#prosegurar");
+    strcpy(passwordDDNSnuevo,"ar12345");
+    strcpy(userOriginal, "admin");
+    strcpy(passwordOriginal,"ar14562322");
+    strcpy(ipOriginal,"14562322.ar.camaras.proseguralarmas.com");
+    portSdk =8000;
+    tipoDDNS=3;*/
+
+
+    }
+    //---------------------------------------
+    //Init device
+    NET_DVR_Init();
+    //Set connect time and reconnect time
+    NET_DVR_SetConnectTime(10000, 1);
+    NET_DVR_SetReconnect(10000, true);
+
+    //---------------------------------------
+    // Register device
+    LONG lUserID;
+
+
+    NET_DVR_DEVICEINFO_V30 struDeviceInfo;
+
+
+    lUserID = NET_DVR_Login_V30(ipOriginal, portSdk,userOriginal, passwordOriginal, &struDeviceInfo);
+
+
+
+    // Hasta acá logueado.
+    //******************************************************************************************************************
+
+    if (lUserID < 0)
+    {
+        errorCode=(int)NET_DVR_GetLastError();
+        printf("Login error, %d\n", errorCode );
+        NET_DVR_Cleanup();
+        return errorCode;
+    }
+
+    int iRet;
+
+    DWORD dwreturn;
+    DWORD dwreturnDNS;
+    NET_DVR_DDNSPARA_V30 estructuraPreexistente= {0};
+    NET_DVR_DDNSPARA_V30 estructuraNueva= {0};
+
+    /*Cambios dns google*/
+
+    char dnsGoogle1[16]= {0};
+    char dnsGoogle2[16]= {0};
+    strcpy((char*)dnsGoogle1, "8.8.8.8");
+    strcpy((char*)dnsGoogle2, "8.8.4.4");
+    NET_DVR_NETCFG_V30 estructuraDNSexistente={0};// estructura de datos dns 8.8.8.8 y 8.8.4.4 por ej
+    NET_DVR_NETCFG_V30 estructuraDNSNueva={0};
+
+    iRet = NET_DVR_GetDVRConfig(
+                                lUserID,
+                                NET_DVR_GET_NETCFG_V30,
+                                0xFFFFFFFF,
+                                &estructuraDNSexistente,
+                                sizeof(NET_DVR_NETCFG_V30),
+                                &dwreturnDNS);
+     if (!iRet)
+    {
+        errorCode=(int)NET_DVR_GetLastError();
+        printf((char*)NET_DVR_GetErrorMsg());
+        NET_DVR_Logout_V30(lUserID);
+        NET_DVR_Cleanup();
+        return errorCode;
+    }
+    estructuraDNSNueva=estructuraDNSexistente;
+    strcpy(estructuraDNSNueva.struDnsServer1IpAddr.sIpV4, dnsGoogle1);
+    strcpy(estructuraDNSNueva.struDnsServer2IpAddr.sIpV4, dnsGoogle2);
+
+
+    iRet = NET_DVR_SetDVRConfig(lUserID, NET_DVR_SET_NETCFG_V30, struDeviceInfo.byStartChan,
+                                &estructuraDNSNueva, sizeof(NET_DVR_NETCFG_V30));
+
+
+    if (!iRet)
+    {
+        errorCode=(int)NET_DVR_GetLastError();
+        printf((char*)NET_DVR_GetErrorMsg());
+        NET_DVR_Logout_V30(lUserID);
+        NET_DVR_Cleanup();
+        return errorCode;
+    }
+    printf("\n");
+    printf("PONIENDO DNS DE GOOGLE EN LA PLACA DE RED");
+
+    /*Cambios dns google*/
+
+
+    printf("\n");
+    printf("Haciendo Logout -->");
+    NET_DVR_Logout(lUserID);
+    //Release sdk resource
+    printf("\n");
+    printf("Limpiando recursos del SDK");
+    NET_DVR_Cleanup();
+
+    errorCode=(int)NET_DVR_GetLastError();
+
+
+
+    if (errorCode==0)
+    {
+        printf(" TODO SALIO BIEN!");
+        printf("\n");
+    }
+    else
+
+    {
+        printf("**************HUBO UN ERROR**************");
+        printf("\n");
+        printf("Codigo de error devuelto --> , %d\n", errorCode );
+        printf("\n");
+        printf("*****************************************");
+    }
+
+    return errorCode;
+}
+
+
+
